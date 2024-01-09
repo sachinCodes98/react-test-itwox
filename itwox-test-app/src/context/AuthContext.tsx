@@ -20,7 +20,6 @@ export const AuthProvider:React.FC<AuthProviderPops> = ({children}) => {
   const login = (token: string) => {
     localStorage.setItem("token", token);
     setIsAuthenticated(true);
-    navigate("/dashboard")
   };
 
   const logout = () => {

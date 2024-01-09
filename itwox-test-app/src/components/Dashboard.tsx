@@ -1,60 +1,84 @@
-import React from 'react';
-import { usePosts, useComments } from './api';
-// Assuming your post object has 'id', 'title', and 'body' properties
+import React, { useState, useEffect } from "react";
+import { usePosts, useComments } from "./api";
+import PostCard from "./PostCard";
+import { Button } from "react-bootstrap";
+// Assuming our post object has 'userId', id', 'title', and 'body' properties
 interface Post {
-    id: number;
-    title: string;
-    body: string;
-  }
-  
-  // Assuming your comment object has 'postId' property
-  interface Comment {
-    postId: number;
-    // other comment properties...
-  }
-  
-  // ...
-  
- const Dashboard = () => {
-    const { data: posts } = usePosts();
-    const { data: comments } = useComments();
-  
-    // Assuming you have a state to manage the current page
-    const [currentPage, setCurrentPage] = React.useState(1);
+  userId: number;
+  id: number;
+  title: string;
+  body: string;
+}
+
+// Assuming our comment object has 'postId' property
+interface Comment {
+  postId: number;
+}
+
+
+const Dashboard = () => {
+  const { data: posts } = usePosts();
+  const { data: comments } = useComments();
+  const [lastPage, setLastPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPosts, setCurrentPosts] = useState<[]>([]);
+
+  useEffect(() => {
     const postsPerPage = 10;
-  
-    // Calculate pagination
+
+    if (!posts || !comments) {
+      return;
+    }
+
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = posts?.slice(indexOfFirstPost, indexOfLastPost);
-  
-    return (
-      <>
-        <h1>Posts</h1>
-        {currentPosts?.map((post: Post) => (
-          <div key={post.id}>
-            <h3>{post.title}</h3>
-            <p>{post.body}</p>
-            <p>Comments: {comments?.filter((comment: Comment) => comment.postId === post.id).length}</p>
-          </div>
-        ))}
-  
-        {/* Pagination */}
-        <div>
-          <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
-            Previous
-          </button>
-          <span>{currentPage}</span>
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPosts && currentPosts.length < postsPerPage}
-          >
-            Next
-          </button>
-        </div>
-      </>
-    );
-  };
-  
+    const currentPostsFetched = posts.slice(indexOfFirstPost, indexOfLastPost);
+    setCurrentPosts(currentPostsFetched);
+    setLastPage(Math.ceil(posts.length / postsPerPage));
+  }, [currentPage, posts, comments]);
 
-  export default Dashboard;
+  return (
+    <>
+      <h1>Posts</h1>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "10px",
+          margin: "auto",
+        }}
+      >
+        {currentPosts?.map((post: Post) => {
+          let commentsLength: number = comments
+            ? comments.filter((comment: Comment) => comment.postId === post.id)
+                .length
+            : 0;
+          return (
+            <div key={post.id}>
+              <PostCard post={post} commentsLength={commentsLength} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Pagination */}
+      <div>
+        <Button
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          variant="info"
+        >
+          {`< Previous`}{" "}
+        </Button>
+        <span style={{ margin: "0 20px" }}>{currentPage}</span>
+        <Button
+          onClick={() => currentPage && setCurrentPage(currentPage + 1)}
+          disabled={currentPage == lastPage}
+          variant="info"
+        >{`Next >`}</Button>
+      </div>
+    </>
+  );
+};
+
+export default Dashboard;

@@ -10,9 +10,11 @@ const DashboardPage = () => {
 
     useEffect(()=>{
         if(!isAuthenticated){
+            console.log(!isAuthenticated);
+            
             navigate("/sign-in")
         }
-    }, [])
+    }, [isAuthenticated])
 
   return (
     <>
