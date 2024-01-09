@@ -1,8 +1,16 @@
+// api.ts
 import { useQuery } from "react-query";
+
+const postsApi = process.env.REACT_APP_POSTS_API;
+const commentsApi = process.env.REACT_APP_COMMENTS_API;
+
+if (!postsApi || !commentsApi) {
+  throw new Error("API URLs are not defined in the environment variables.");
+}
 
 export const getPosts = async () => {
   try {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    const response = await fetch(postsApi);
     const data = await response.json();
     return data;
   } catch (err) {
@@ -12,9 +20,7 @@ export const getPosts = async () => {
 
 export const getComments = async () => {
   try {
-    const response = await fetch(
-      "https://jsonplaceholder.typicode.com/comments"
-    );
+    const response = await fetch(commentsApi);
     const data = await response.json();
     return data;
   } catch (err) {
